@@ -30,7 +30,7 @@ foreach ($domains as $domain => $password)
 
     $buffer = "POST /api/dynLinux.php HTTP/1.0\r\n";
     $buffer .= "Host: $host:$port\r\n";
-    $buffer .= "User-Agent: EditDNS PHP Updater 0.1\r\n";
+    $buffer .= "User-Agent: PHP EditDNS Updater 0.1\r\n";
     $buffer .= "Referer: http://www.editdns.net\r\n";
     $buffer .= "Content-Type: application/x-www-form-urlencoded\r\n";
     $buffer .= "Content-Length: $postlen\r\n\r\n";
