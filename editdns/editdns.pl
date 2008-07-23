@@ -1,40 +1,58 @@
 #!/usr/bin/perl
  
-use strict;
- 
-## Configure ONLY this 2 variables
-my $editdns_pass   = ""; # put your password
-my $editdns_record = ""; # put the record you wish to update
- 
-## ###############
-## Nothing else should be changed unless you know what to do
-## ###############
- 
-my $host = "DynDNS.EditDNS.net";
+undef %domains;
+
+# the key (inside the curly braces) of the hash below is the domain name
+# the value (after the =) of the hash is the password for dynamic updates
+$domains{"domain1.com"} = "password1";
+$domains{"domain2.com"} = "password2";
+$domains{"domain3.com"} = "password3";
+
+# DO NOT EDIT BELOW THIS LINE
+
+use Sys::Syslog qw( :DEFAULT setlogsock);
+
+setlogsock('unix');
+openlog('EditDNS','pid','local0');
+
+my $host = "dyndns.editdns.net";
 my $port = 80;
-my $editdns_post = "p=$editdns_pass&r=$editdns_record";
- 
-my $editdns_req = join("",
-  "POST /api/dynLinux.php HTTP/1.0\r\n",
-  "Host: $host:$port\r\n",
-  "User-Agent: EditDNS Browser 0.1\r\n",
-  "Referer: http://www.editdns.net\r\n",
-  "Content-Type: application/x-www-form-urlencoded\r\n",
-  "Content-Length: ".length($editdns_post)."\r\n\r\n",
-  "$editdns_post\n"
-);
- 
-my $hostaddr = (gethostbyname($host))[4] || &error("Couldn't get IP for $host");
-my $remotehost= pack('S n a4 x8',2,$port,$hostaddr);
-socket(S,2,1,6) || &error("Couldn't create socket");
-connect(S,$remotehost) || &error("Couldn't connect to $host:$port");
-select((select(S),$|=1)[0]);
-print S $editdns_req;
-vec(my $rin='',fileno(S),1)= 1 ;
-select($rin,undef,undef,60) || &error("No response from $host:$port");
-undef($/);
-close(S);
-print "[DONE]\n";
+
+syslog('info', "Started EditDNS.net update...");
+
+foreach $domain (keys %domains) {
+    my $recvbuffer = "";
+    my $post = "p=" .$domains{$domain} ."&r=$domain";
+    my $buffer = join("",
+        "POST /api/dynLinux.php HTTP/1.0\r\n",
+        "Host: $host:$port\r\n",
+        "User-Agent: EditDNS Perl Updater 0.1\r\n",
+        "Referer: http://www.editdns.net\r\n",
+        "Content-Type: application/x-www-form-urlencoded\r\n",
+        "Content-Length: " .length($post) ."\r\n\r\n",
+        "$post\n");
+
+    my $hostip = (gethostbyname($host))[4] || &error("Couldn't get IP for $host");
+    my $remotehost = pack('S n a4 x8', 2, $port, $hostip);
+
+    socket(S, 2, 1, 6) || &error("Couldn't create socket");
+    connect(S, $remotehost) || &error("Couldn't connect to $host:$port");
+    select((select(S), $| = 1)[0]);
+    print S $buffer;
+    vec(my $rin='', fileno(S), 1) = 1 ;
+    select($rin, undef, undef, 60) || &error("No response from $host:$port");
+
+    read(S, $recvbuffer, 1024);
+    
+    syslog('info', "Updated $domain. Returned: $recvbuffer");
+
+    undef($/);
+    close(S);
+}
+
+syslog('info', "Completed EditDNS.net update.");
+
+closelog;
 exit;
  
 sub error {
