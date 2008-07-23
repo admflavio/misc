@@ -26,7 +26,7 @@ foreach $domain (keys %domains) {
     my $buffer = join("",
         "POST /api/dynLinux.php HTTP/1.0\r\n",
         "Host: $host:$port\r\n",
-        "User-Agent: EditDNS Perl Updater 0.1\r\n",
+        "User-Agent: Perl EditDNS Updater 0.2\r\n",
         "Referer: http://www.editdns.net\r\n",
         "Content-Type: application/x-www-form-urlencoded\r\n",
         "Content-Length: " .length($post) ."\r\n\r\n",
