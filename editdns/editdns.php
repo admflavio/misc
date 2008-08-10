@@ -1,5 +1,6 @@
 <?php
 
+
 // Modify this array to include all the domains you wish to update
 // array keys are the domain name, array values are the password you setup for dynamic updates
 $domains = array(
@@ -11,6 +12,11 @@ $domains = array(
 
 $host = "dyndns.editdns.net";
 $port = 80;
+
+/* check for command-line options
+if ($argc != 2 || in_array($argv[1], array('--help', '-help', '-h', 
+'-?')))
+{ */
 
 // setup syslogging
 define_syslog_variables();
