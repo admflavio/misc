@@ -2,4 +2,4 @@
 
 input_file=$1
 
-ffmpeg -y -maxfr 30 -i "$1" title "$2" -bitexact -vcodec h264 coder 0 -bufsize 256 -g 250 -vlevel 13 -fixaspect -s 480x320 -b 192 -maxrate 768 -qmin 2 -qmax 51 -acodec aac -ac 2 -ar 44100 -ab 48 -f pod "$2.m4v"
+ffmpeg -i "$1" -title "$2" -vcodec h264 -bufsize 1000000 -g 250 -vlevel 13 -s 480x320 -b 192 -maxrate 768 -qmin 2 -qmax 51 -acodec aac -ac 2 -ar 44100 -ab 48 "$2.m4v"

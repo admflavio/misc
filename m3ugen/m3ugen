@@ -1,0 +1,33 @@
+#!/bin/bash
+# Usage: ./m3ugen
+# m3ugen builds playlists for MP3, OGG, FLAC and WAV files in a directory tree.
+# It will place an M3U file in each subdirectory containing music files.
+# All paths are relative to the location of the M3U file.
+
+IFS=$'\n' # Input Field Separator
+
+m3ulist="`pwd`/m3ulist.txt" # Look here to see where your M3U files were created.
+rm -f $m3ulist
+
+alldirs=$(find $(pwd) -type d | sort)
+for dir in $alldirs
+do
+	cd "$dir"
+	flist="" # initialize empty variable FileList
+	for ftype in "ogg" "mp3" "flac" "wav" # loop over file types.
+	do
+		findfiles=$(find ./ -type f -iname "*.$ftype" | sort)
+		flist=$flist$findfiles
+	done
+
+	if [ "${#flist}" != "0" ] # do not write m3u file if file list is empty
+	then
+		thisdir=$(pwd) # get the current directory
+		m3uname=$(basename $thisdir) # basename is a command that strips off the parent directories of a path.
+		echo "Writing M3U playlist to $thisdir..." # Tell the user that an m3u playlist is being created
+		echo "$flist" > "${m3uname}.m3u" # write the list of music files to the m3u file
+		echo "$thisdir/${m3uname}.m3u" >> "$m3ulist" # Add the m3u file to the list of m3u files.
+	fi
+done
+
+exit 0
